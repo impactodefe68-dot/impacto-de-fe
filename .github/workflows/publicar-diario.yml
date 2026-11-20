@@ -1,0 +1,45 @@
+name: Publicación diaria — De regreso a casa
+
+on:
+  # Activar después de configurar y probar las cuentas:
+  # schedule:
+  #   - cron: '0 21 * * *'  # 5:00 PM Venezuela
+  workflow_dispatch:  # botón para probar manualmente
+
+permissions:
+  contents: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests requests-oauthlib Pillow
+
+      - name: Publicar en redes
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          TIKTOK_PRIVACY: ${{ secrets.TIKTOK_PRIVACY }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          REPO_OWNER: impactodefe68-dot
+          REPO_NAME: impacto-de-fe
+        run: python publicar.py
+
+      - name: Guardar avance
+        run: |
+          git config user.name "Impacto de Fe Bot"
+          git config user.email "bot@impactodefe.local"
+          git add estado.json
+          git commit -m "Publicación diaria $(date +%F)" || true
+          git push
